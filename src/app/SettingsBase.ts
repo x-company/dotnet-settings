@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2019-01-05 14:44:35
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-06 17:52:13
+ * @Last Modified At: 2019-01-07 22:14:22
  * @Description: This is description.
  */
 
@@ -20,20 +20,16 @@ import { Log } from '../helpers/Log';
 
 export class SettingsBase {
 
-    protected RootPath: string;
     protected IsSolution: boolean = false;
     protected FilePath: string;
     protected FileName: string;
 
-    constructor(rootPath: string, projectFile: string) {
-
-        this.RootPath = rootPath;
+    constructor(projectFile: string) {
 
         Log.verbose(`Init SettingsReader/Writer with File '${projectFile}' ...`);
 
-        const directory = path.resolve(path.join(rootPath), path.dirname(projectFile));
         this.FileName = path.basename(projectFile);
-        this.FilePath = path.resolve(path.join(directory, this.FileName));
+        this.FilePath = projectFile;
 
         if (this.FileName.endsWith('.sln')) {
             Log.verbose('Parse .Net Solution File');

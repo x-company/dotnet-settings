@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-21 17:00:16
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-07 00:19:34
+ * @Last Modified At: 2019-01-07 21:56:24
  * @Description: This is description.
  */
 
@@ -21,9 +21,9 @@ import { Log } from '../helpers/Log';
 
 export class SettingsWriter extends SettingsBase {
 
-    constructor(rootPath: string, projectFile: string, private options: DotNetSettingsOptions) {
+    constructor(projectFile: string, private options: DotNetSettingsOptions) {
 
-        super(rootPath, projectFile);
+        super(projectFile);
     }
 
     public writeSettings(settings: ISettings, overwrite?: boolean): Promise<ISettings> {
