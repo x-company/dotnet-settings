@@ -7,14 +7,15 @@
  * @Script: index.ts
  * @Author: Roland Breitschaft
  * @Email: roland.breitschaft@x-company.de
- * @Create At: 2018-12-21 16:58:41
+ * @Create At: 2018-12-21 16:57:50
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2018-12-22 09:52:57
+ * @Last Modified At: 2018-12-21 20:38:58
  * @Description: This is description.
  */
 
-
-
-export { ISettings } from './types/ISettings';
-export { DotNetSettingsOptions } from './types/DotnetSettingsOptions';
-export { DotNetSettings } from './app/DotNetSettings';
+export * from './IBuildSettings';
+export * from './IPackageSettings';
+export * from './IProjectSettings';
+export * from './ISettings';
+export * from './IVersionSettings';
+export * from './DotnetSettingsOptions';

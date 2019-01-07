@@ -1,0 +1,13 @@
+{
+    "Build": {
+        "DelaySign": true,
+        "SignAssembly": true
+    },
+    "Package": null,
+    "Project": {
+        "Description": "Global AminOO Core Data Library for all AminOO Projects",
+        "PackageTags": "Datev AminOO Core Data",
+        "RootNamespace": "Datev.AminOO.Data"
+    },
+    "Version": null
+}

@@ -28,10 +28,10 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch CLI",
+            "name": "Launch Application",
             "cwd": "${workspaceFolder}",
             "args": [
-                "${workspaceFolder}/samples/index.ts"
+                "${workspaceFolder}/samples/build.ts"
             ],
             "env": {
                 "NODE_ENV": "development",

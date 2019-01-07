@@ -1,0 +1,30 @@
+{
+    "Build": {
+        "AssemblyOriginatorKeyFile": null,
+        "Configuration": "Debug",
+        "DelaySign": false,
+        "OutputPath": null,
+        "RuntimeIdentifiers": null,
+        "SignAssembly": false,
+        "TargetFramework": null
+    },
+    "Package": {
+        "Authors": null,
+        "Company": null,
+        "Copyright": null,
+        "GeneratePackageOnBuild": false,
+        "PackageProjectUrl": null,
+        "RepositoryType": "git",
+        "RepositoryUrl": null
+    },
+    "Project": null,
+    "Version": {
+        "AssemblyVersion": "0.1.0.0",
+        "FileVersion": "0.1.0.0",
+        "InformationalVersion": "0.1.0",
+        "PackageVersion": "0.1.0",
+        "Version": "0.1.0",
+        "VersionPrefix": "0.1.0",
+        "VersionSuffix": null
+    }
+}

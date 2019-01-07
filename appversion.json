@@ -6,9 +6,9 @@
     "badge": "[![dotnet-settings-version](https://img.shields.io/badge/Version-${M.m.p}-brightgreen.svg?style=flat)](https://www.npmjs.com/package/dotnet-settings/v/${M.m.p})"
   },
   "build": {
-    "date": "2018-12-21T15:31:30.556Z",
-    "number": 2,
-    "total": 2,
+    "date": "2019-01-07T00:33:09.300Z",
+    "number": 38,
+    "total": 38,
     "badge": "[![dotnet-settings-build](https://img.shields.io/badge/Builds-${t}-brightgreen.svg?style=flat)](https://github.com/x-company/dotnet-settings#status)"
   },
   "status": {
@@ -17,7 +17,7 @@
     "badge": "[![dotnet-settings-status](https://img.shields.io/badge/Status-${S%20s}-brightgreen.svg?style=flat)](https://github.com/x-company/dotnet-settings#status)"
   },
   "git": {
-    "commit": null,
+    "commit": "9dc0e88",
     "tag": "M.m.p-S.s-t"
   },
   "config": {
