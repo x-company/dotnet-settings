@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-22 09:50:35
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-07 00:11:43
+ * @Last Modified At: 2019-01-07 22:28:58
  * @Description: This is description.
  */
 
@@ -17,16 +17,15 @@
 
 import { DotNetSettings } from '../lib';
 
-const settings = new DotNetSettings('./src/SampleSolution.sln', {
+const settings = new DotNetSettings('./samples/src/SampleSolution.sln', {
     UseAppVersionMgr: true,
 });
 
 // Init Default Settings
 const initSettingsFn = async () => {
-    const projectSettings = await settings.initSettings(true);
-    console.log('Project Initial Settings', projectSettings);
+    await settings.initSettings(false);
 
     // Write Settings to DotNet Projects
-    await settings.updateProjects();
+    // await settings.updateProjects();
 };
 initSettingsFn();

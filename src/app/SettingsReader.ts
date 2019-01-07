@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-21 17:00:16
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-07 01:15:11
+ * @Last Modified At: 2019-01-07 22:41:56
  * @Description: This is description.
  */
 
@@ -22,13 +22,13 @@ import { DotNetHelpers } from '../helpers/DotNetHelpers';
 import { SettingsBase } from './SettingsBase';
 import { SettingsWriter } from './SettingsWriter';
 import { MergeHelpers } from '../helpers/MergeHelpers';
-import appversion, { CreateCommand } from 'appversion-mgr';
+import { Info, CreateCommand } from 'appversion-mgr';
 
 export class SettingsReader extends SettingsBase {
 
-    constructor(rootPath: string, projectFile: string, private options: DotNetSettingsOptions) {
+    constructor(projectFile: string, private options: DotNetSettingsOptions) {
 
-        super(rootPath, projectFile);
+        super(projectFile);
     }
 
     public init(overwriteSettingsFile?: boolean): Promise<ISettings[]> {
@@ -46,7 +46,7 @@ export class SettingsReader extends SettingsBase {
                     const projects = await DotNetHelpers.getProjectsFromSolution(this.FilePath);
                     if (projects) {
                         const result = projects.map(async (projectFile: string) => {
-                            const reader = new SettingsReader(this.RootPath, projectFile, this.options);
+                            const reader = new SettingsReader(projectFile, this.options);
                             const projectSettings = await reader.read(createSettingsFile, overwriteSettingsFile);
 
                             if (projectSettings && projectSettings.length !== 0) {
@@ -134,14 +134,16 @@ export class SettingsReader extends SettingsBase {
                     },
                 };
 
-                if (this.options.UseAppVersionMgr && settings.Version) {
-                    settings.Version.AssemblyVersion = await appversion.Info.composePattern('M.m.p.t', projectFile);
-                    settings.Version.FileVersion = await appversion.Info.composePattern('M.m.p.t', projectFile);
-                    settings.Version.InformationalVersion = await appversion.Info.composePattern('M.m.p-S.s-t', projectFile);
-                    settings.Version.PackageVersion = await appversion.Info.composePattern('M.m.p-S.s-t', projectFile);
-                    settings.Version.Version = await appversion.Info.composePattern('M.m.p', projectFile);
-                    settings.Version.VersionPrefix = await appversion.Info.composePattern('M.m.p', projectFile);
-                    settings.Version.VersionSuffix = await appversion.Info.composePattern('S.s-t', projectFile);
+                if (this.options.UseAppVersionMgr && settings.Version && projectFile) {
+                    const dir = path.dirname(projectFile);
+
+                    settings.Version.AssemblyVersion = await Info.composePattern('M.m.p.t', dir);
+                    settings.Version.FileVersion = await Info.composePattern('M.m.p.t', dir);
+                    settings.Version.InformationalVersion = await Info.composePattern('M.m.p-S.s-t', dir);
+                    settings.Version.PackageVersion = await Info.composePattern('M.m.p-S.s-t', dir);
+                    settings.Version.Version = await Info.composePattern('M.m.p', dir);
+                    settings.Version.VersionPrefix = await Info.composePattern('M.m.p', dir);
+                    settings.Version.VersionSuffix = await Info.composePattern('S.s-t', dir);
                 }
 
                 resolve(settings);
@@ -204,11 +206,17 @@ export class SettingsReader extends SettingsBase {
                     if (currentSettings) {
 
                         if (createSettingsFile) {
-                            const writer = new SettingsWriter(this.RootPath, this.FilePath, this.options);
+                            const writer = new SettingsWriter(this.FilePath, this.options);
                             currentSettings = await writer.writeSettings(currentSettings, overwriteSettingsFile);
 
-                            if (this.options.UseAppVersionMgr) {
-                                const dir = path.dirname(this.FilePath);
+                            const dir = path.dirname(this.FilePath);
+                            const appVersionFile = path.join(dir, 'appversion.json');
+
+                            if (this.options.UseAppVersionMgr && (overwriteSettingsFile || !fs.existsSync(appVersionFile))) {
+
+                                if (fs.existsSync(appVersionFile)) {
+                                    fs.unlinkSync(appVersionFile);
+                                }
                                 const create = new CreateCommand(dir);
                                 create.initAppVersion();
                             }
@@ -243,7 +251,7 @@ export class SettingsReader extends SettingsBase {
 
                 const currentSettings = await this.parseProjectFile(project);
                 if (currentSettings) {
-                    const writer = new SettingsWriter(this.RootPath, this.FilePath, this.options);
+                    const writer = new SettingsWriter(this.FilePath, this.options);
                     writer.writeSettings(currentSettings, overwriteSettingsFile);
                 }
             }
