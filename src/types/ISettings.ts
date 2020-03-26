@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-21 16:58:22
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-06 20:30:16
+ * @Last Modified At: 2019-11-14 15:27:27
  * @Description: This is description.
  */
 
@@ -17,11 +17,13 @@ import { IBuildSettings } from './IBuildSettings';
 import { IPackageSettings } from './IPackageSettings';
 import { IProjectSettings } from './IProjectSettings';
 import { IVersionSettings } from './IVersionSettings';
+import { IVersionPatternSettings } from './IVersionPatternSettings';
 
 export interface ISettings {
-    ProjectFile: string | null;
-    Build: IBuildSettings | null;
-    Package: IPackageSettings | null;
-    Project: IProjectSettings | null;
-    Version: IVersionSettings | null;
+    ProjectFile: string;
+    Build: IBuildSettings;
+    Package: IPackageSettings;
+    Project: IProjectSettings;
+    Version: IVersionSettings;
+    Pattern: IVersionPatternSettings;
 }

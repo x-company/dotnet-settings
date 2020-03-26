@@ -1,0 +1,14 @@
+{
+    "ProjectFile": "samples/src/Sample.Core/Sample.Core.csproj",
+    "Project": {
+        "Description": null,
+        "PackageTags": null,
+        "RootNamespace": "My.Special.NameSpace",
+        "AssemblyName": "Sample.Core",
+        "IsTestProject": false,
+        "LangVersion": "8.0"
+    },
+    "Package": {
+        "GeneratePackageOnBuild": false
+    }
+}

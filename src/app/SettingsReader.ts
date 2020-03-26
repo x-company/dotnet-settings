@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-21 17:00:16
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-07 22:41:56
+ * @Last Modified At: 2020-02-19 10:20:48
  * @Description: This is description.
  */
 
@@ -23,238 +23,307 @@ import { SettingsBase } from './SettingsBase';
 import { SettingsWriter } from './SettingsWriter';
 import { MergeHelpers } from '../helpers/MergeHelpers';
 import { Info, CreateCommand } from 'appversion-mgr';
+import { Helper } from '../helpers/Helper';
 
 export class SettingsReader extends SettingsBase {
 
-    constructor(projectFile: string, private options: DotNetSettingsOptions) {
+    constructor(private options: DotNetSettingsOptions, solutionFile: string, projectFile?: string) {
 
-        super(projectFile);
+        super(solutionFile, projectFile);
     }
 
-    public init(overwriteSettingsFile?: boolean): Promise<ISettings[]> {
+    public init(overwriteSettingsFile?: boolean): Promise<ISettings> {
 
         return this.read(true, overwriteSettingsFile);
     }
 
-    public read(createSettingsFile: boolean = false, overwriteSettingsFile: boolean = false): Promise<ISettings[]> {
+    public async read(createSettingsFile: boolean = false, overwriteSettingsFile: boolean = false): Promise<ISettings> {
 
-        return new Promise<ISettings[]>(async (resolve, reject) => {
-            try {
+        try {
+            if (this.IsSolution) {
+                Log.success(`Process Solution '${this.SolutionFileName}' ...`);
+            } else {
+                Log.success(`Process Project '${this.ProjectFileName}' ...`);
+            }
+            const projectSettings = await this.loadProjectFile(createSettingsFile, overwriteSettingsFile);
+
+            return projectSettings;
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async upgradeSchema() {
+        try {
+            const settingsFileName = this.getSettingsFileName(this.IsSolution);
+            if (settingsFileName) {
+                Log.info('Verify Schema Upgrade for Settings File ...');
+                const currentSettings = await fs.readJson(settingsFileName, { encoding: 'utf-8' }) as ISettings;
+                const defaultSettings = await this.initSettings();
+                let upgradedSettings = {};
 
                 if (this.IsSolution) {
+                    delete defaultSettings.Project;
+                    delete defaultSettings.ProjectFile;
 
-                    const projects = await DotNetHelpers.getProjectsFromSolution(this.FilePath);
-                    if (projects) {
-                        const result = projects.map(async (projectFile: string) => {
-                            const reader = new SettingsReader(projectFile, this.options);
-                            const projectSettings = await reader.read(createSettingsFile, overwriteSettingsFile);
-
-                            if (projectSettings && projectSettings.length !== 0) {
-                                return projectSettings[0];
-                            }
-                        });
-
-                        Promise.all(result)
-                            .then((results) => {
-                                const settings = new Array<ISettings>();
-                                results.map((resultItem) => {
-                                    if (resultItem) {
-                                        settings.push(resultItem);
-                                    }
-                                });
-                                return settings;
-                            })
-                            .then((settings) => {
-                                this.createSolutionFile(overwriteSettingsFile);
-                                resolve(settings);
-                            })
-                            .catch((err) => reject(err));
-                    } else {
-                        Log.warning('No Projects found in Solution File.');
-                    }
-
+                    upgradedSettings = {
+                        ...defaultSettings,
+                        ...currentSettings,
+                        Package: {
+                            ...defaultSettings.Package,
+                            ...currentSettings.Package,
+                        },
+                        Build: {
+                            ...defaultSettings.Build,
+                            ...currentSettings.Build,
+                        },
+                        Version: {
+                            ...defaultSettings.Version,
+                            ...currentSettings.Version,
+                        },
+                        Pattern: {
+                            ...defaultSettings.Pattern,
+                            ...currentSettings.Pattern,
+                        },
+                    };
                 } else {
-                    const projectSettings = await this.loadProjectFile(createSettingsFile, overwriteSettingsFile);
-                    if (projectSettings) {
+                    delete defaultSettings.Package;
+                    delete defaultSettings.Build;
+                    delete defaultSettings.Version;
+                    delete defaultSettings.Pattern;
 
-                        resolve(new Array<ISettings>(projectSettings));
-                    } else {
-                        resolve(new Array<ISettings>());
-                    }
-                }
-            } catch (e) {
-                reject(Log.critical(e));
-            }
-        });
-    }
-
-    private parseProjectFile(project: ElementCompact, projectFile?: string): Promise<ISettings> {
-
-        return new Promise<ISettings>(async (resolve, reject) => {
-            if (!project.Project.PropertyGroup) {
-                reject(Log.critical('No Property Group found.'));
-            } else {
-
-                const group = project.Project.PropertyGroup;
-                const target = await DotNetHelpers.getDotNetCoreTarget();
-
-                const settings: ISettings = {
-                    ProjectFile: projectFile || null,
-                    Build: {
-                        AssemblyOriginatorKeyFile: this.readTextValue(group.AssemblyOriginatorKeyFile),
-                        Configuration: this.readTextValue(group.Configuration, 'Release'),
-                        DelaySign: this.readBoolValue(group.DelaySign, false),
-                        OutputPath: this.readTextValue(group.OutputPath),
-                        RuntimeIdentifiers: this.readTextValue(group.RuntimeIdentifiers),
-                        SignAssembly: this.readBoolValue(group.SignAssembly, false),
-                        TargetFramework: this.readTextValue(group.TargetFramework, target),
-                    },
-                    Package: {
-                        Authors: this.readTextValue(group.Authors),
-                        Company: this.readTextValue(group.Company),
-                        Copyright: this.readTextValue(group.Copyright),
-                        GeneratePackageOnBuild: this.readBoolValue(group.GeneratePackageOnBuild, false),
-                        PackageProjectUrl: this.readTextValue(group.PackageProjectUrl),
-                        RepositoryType: this.readTextValue(group.RepositoryType, 'git'),
-                        RepositoryUrl: this.readTextValue(group.RepositoryUrl),
-                    },
-                    Project: {
-                        Description: this.readTextValue(group.Description),
-                        PackageTags: this.readTextValue(group.PackageTags),
-                        RootNamespace: this.readTextValue(group.RootNamespace),
-                    },
-                    Version: {
-                        AssemblyVersion: this.readTextValue(group.AssemblyVersion, '0.1.0.0'),
-                        FileVersion: this.readTextValue(group.FileVersion, '0.1.0.0'),
-                        InformationalVersion: this.readTextValue(group.InformationalVersion, '0.1.0'),
-                        PackageVersion: this.readTextValue(group.PackageVersion, '0.1.0'),
-                        Version: this.readTextValue(group.Version, '0.1.0'),
-                        VersionPrefix: this.readTextValue(group.VersionPrefix, '0.1.0'),
-                        VersionSuffix: this.readTextValue(group.VersionSuffix),
-                    },
-                };
-
-                if (this.options.UseAppVersionMgr && settings.Version && projectFile) {
-                    const dir = path.dirname(projectFile);
-
-                    settings.Version.AssemblyVersion = await Info.composePattern('M.m.p.t', dir);
-                    settings.Version.FileVersion = await Info.composePattern('M.m.p.t', dir);
-                    settings.Version.InformationalVersion = await Info.composePattern('M.m.p-S.s-t', dir);
-                    settings.Version.PackageVersion = await Info.composePattern('M.m.p-S.s-t', dir);
-                    settings.Version.Version = await Info.composePattern('M.m.p', dir);
-                    settings.Version.VersionPrefix = await Info.composePattern('M.m.p', dir);
-                    settings.Version.VersionSuffix = await Info.composePattern('S.s-t', dir);
-                }
-
-                resolve(settings);
-            }
-        });
-    }
-
-    private readTextValue(value: any, defaultValue?: string): string | null {
-        if (value) {
-            return value._text;
-        }
-
-        if (defaultValue) {
-            return defaultValue;
-        }
-
-        return null;
-    }
-
-    private readBoolValue(value: any, defaultValue: boolean): boolean {
-        if (value) {
-            return !!JSON.parse(String(value._text).toLowerCase());
-        }
-
-        return defaultValue;
-    }
-
-    private loadProjectFile(createSettingsFile: boolean, overwriteSettingsFile: boolean): Promise<ISettings> {
-
-        return new Promise<ISettings>(async (resolve, reject) => {
-            if (fs.existsSync(this.FilePath)) {
-                try {
-                    Log.info(`Load Project File '${this.FileName}' ...`);
-                    const projectData = await fs.readFile(this.FilePath, { encoding: 'utf8' });
-
-                    const project = xml2js(projectData, {
-                        compact: true,
-                        alwaysChildren: true,
-                        ignoreComment: true,
-                    });
-
-                    let currentSettings = await this.parseProjectFile(project, this.FilePath);
-
-                    const solutionSettingsFileName = this.getSettingsFileName(true);
-                    const projectSettingsFileName = this.getSettingsFileName();
-
-                    let solutionUserSettings: ISettings | null = null;
-                    if (solutionSettingsFileName && fs.existsSync(solutionSettingsFileName)) {
-                        Log.verbose('Load Solution User Settings');
-                        solutionUserSettings = require(solutionSettingsFileName) as ISettings;
-                    }
-
-                    if (projectSettingsFileName && fs.existsSync(projectSettingsFileName)) {
-                        Log.verbose('Load Project User Settings ...');
-                        const projectUserSettings = require(projectSettingsFileName) as ISettings;
-
-                        currentSettings = MergeHelpers.mergeSettings(currentSettings, projectUserSettings, solutionUserSettings);
-                    }
-
-                    if (currentSettings) {
-
-                        if (createSettingsFile) {
-                            const writer = new SettingsWriter(this.FilePath, this.options);
-                            currentSettings = await writer.writeSettings(currentSettings, overwriteSettingsFile);
-
-                            const dir = path.dirname(this.FilePath);
-                            const appVersionFile = path.join(dir, 'appversion.json');
-
-                            if (this.options.UseAppVersionMgr && (overwriteSettingsFile || !fs.existsSync(appVersionFile))) {
-
-                                if (fs.existsSync(appVersionFile)) {
-                                    fs.unlinkSync(appVersionFile);
-                                }
-                                const create = new CreateCommand(dir);
-                                create.initAppVersion();
-                            }
+                    upgradedSettings = {
+                        ...defaultSettings,
+                        ...currentSettings,
+                        Project: {
+                            ...defaultSettings.Project,
+                            ...currentSettings.Project,
                         }
-
-                        resolve(currentSettings);
-                    } else {
-                        Log.warning(`Project File '${this.FileName}' could not readed.`);
-                        resolve();
-                    }
-                } catch (e) {
-                    reject(Log.critical(e));
+                    };
                 }
-            } else {
-                Log.warning(`Project File '${this.FileName}' not exists.`);
-                resolve();
+
+                await fs.writeJson(settingsFileName, upgradedSettings, {
+                    encoding: 'utf-8',
+                    spaces: 4,
+                });
             }
-        });
+        } catch (e) {
+            throw e;
+        }
     }
 
-    private createSolutionFile(overwriteSettingsFile: boolean): Promise<any> {
+    private async parseProjectFile(project: ElementCompact): Promise<ISettings> {
 
-        return new Promise(async (resolve, reject) => {
-            if (overwriteSettingsFile) {
-                const emptyProject = `<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup></PropertyGroup></Project>`;
+        // Init Blank Settings
+        const blankSettings = await this.initSettings();
 
-                const project = xml2js(emptyProject, {
+        if (this.IsSolution || !project.Project.PropertyGroup) {
+            return blankSettings;
+        } else {
+
+            const target = await this.searchDotNetTarget();
+
+            const rootDir = Helper.getRoot();
+            let cleanedProjectFile = this.ProjectFilePath;
+            let assemblyName = '';
+            if (cleanedProjectFile) {
+                cleanedProjectFile = cleanedProjectFile.replace(rootDir, '');
+                if (cleanedProjectFile.startsWith('/')) {
+                    cleanedProjectFile = cleanedProjectFile.substring(1);
+                }
+                assemblyName = path.basename(cleanedProjectFile);
+                assemblyName = assemblyName.replace('.csproj', '');
+            }
+            const isTestProject = assemblyName.indexOf('Tests') > -1;
+
+            const group = this.searchGroup(project);
+            const settings: ISettings = {
+                ...blankSettings,
+                ProjectFile: cleanedProjectFile || '',
+                Build: {
+                    AssemblyOriginatorKeyFile: this.readTextValue(group.AssemblyOriginatorKeyFile),
+                    Configuration: this.readTextValue(group.Configuration, 'Release'),
+                    DelaySign: this.readBoolValue(group.DelaySign, false),
+                    OutputPath: this.readTextValue(group.OutputPath),
+                    RuntimeIdentifiers: this.readTextValue(group.RuntimeIdentifiers),
+                    SignAssembly: this.readBoolValue(group.SignAssembly, false),
+                    TargetFramework: this.readTextValue(group.TargetFramework, target),
+                    GenerateDocumentationFile: this.readBoolValue(group.GenerateDocumentationFile, false),
+                },
+                Package: {
+                    Authors: this.readTextValue(group.Authors),
+                    Company: this.readTextValue(group.Company),
+                    Copyright: this.readTextValue(group.Copyright),
+                    GeneratePackageOnBuild: this.readBoolValue(group.GeneratePackageOnBuild, false),
+                    PackageProjectUrl: this.readTextValue(group.PackageProjectUrl),
+                    RepositoryType: this.readTextValue(group.RepositoryType),
+                    RepositoryUrl: this.readTextValue(group.RepositoryUrl),
+                    BadgeBaseUrl: null,
+                },
+                Project: {
+                    Description: this.readTextValue(group.Description),
+                    PackageTags: this.readTextValue(group.PackageTags),
+                    RootNamespace: this.readTextValue(group.RootNamespace),
+                    AssemblyName: this.readTextValue(group.AssemblyName, assemblyName),
+                    IsTestProject: this.readBoolValue(group.IsTestProject, isTestProject),
+                    LangVersion: this.readTextValue(group.LangVersion, '8.0'),
+                },
+                Version: {
+                    AssemblyVersion: this.readTextValue(group.AssemblyVersion, '0.1.0.0'),
+                    FileVersion: this.readTextValue(group.FileVersion, '0.1.0.0'),
+                    InformationalVersion: this.readTextValue(group.InformationalVersion, '0.1.0'),
+                    PackageVersion: this.readTextValue(group.PackageVersion, '0.1.0'),
+                    Version: this.readTextValue(group.Version, '0.1.0'),
+                    VersionPrefix: this.readTextValue(group.VersionPrefix, '0.1.0'),
+                    VersionSuffix: this.readTextValue(group.VersionSuffix),
+                },
+            };
+            return settings;
+        }
+    }
+
+    private async initSettings(): Promise<ISettings> {
+
+        const target = await this.searchDotNetTarget();
+
+        return {
+            ProjectFile: '',
+            Build: {
+                AssemblyOriginatorKeyFile: null,
+                Configuration: 'Release',
+                DelaySign: false,
+                OutputPath: null,
+                RuntimeIdentifiers: null,
+                SignAssembly: false,
+                TargetFramework: target,
+                GenerateDocumentationFile: false,
+            },
+            Package: {
+                Authors: null,
+                Company: null,
+                Copyright: null,
+                GeneratePackageOnBuild: false,
+                PackageProjectUrl: null,
+                RepositoryType: null,
+                RepositoryUrl: null,
+                BadgeBaseUrl: null,
+            },
+            Project: {
+                Description: null,
+                PackageTags: null,
+                RootNamespace: null,
+                AssemblyName: null,
+                IsTestProject: false,
+                LangVersion: '8.0',
+            },
+            Version: {
+                AssemblyVersion: '0.1.0.0',
+                FileVersion: '0.1.0.0',
+                InformationalVersion: '0.1.0',
+                PackageVersion: '0.1.0',
+                Version: '0.1.0',
+                VersionPrefix: '0.1.0',
+                VersionSuffix: null,
+            },
+            Pattern: {
+                AssemblyVersion: 'M.m.p.t',
+                FileVersion: 'M.m.p.t',
+                InformationalVersion: 'M.m.p-S.s-t',
+                PackageVersion: 'M.m.p-S.s-t',
+                Version: 'M.m.p',
+                VersionPrefix: 'M.m.p',
+                VersionSuffix: 'S.s-t',
+            },
+        };
+    }
+
+    private async loadProjectFile(createSettingsFile: boolean, overwriteSettingsFile: boolean): Promise<ISettings> {
+
+        try {
+
+            let currentSettings = await this.initSettings();
+            if (!this.IsSolution) {
+                Log.info(`Load Project File '${this.ProjectFileName}' ...`);
+                const projectData = await fs.readFile(this.ProjectFilePath, { encoding: 'utf8' });
+
+                const project = xml2js(projectData, {
                     compact: true,
                     alwaysChildren: true,
                     ignoreComment: true,
                 });
 
-                const currentSettings = await this.parseProjectFile(project);
-                if (currentSettings) {
-                    const writer = new SettingsWriter(this.FilePath, this.options);
-                    writer.writeSettings(currentSettings, overwriteSettingsFile);
+                currentSettings = await this.parseProjectFile(project);
+            }
+
+            let solutionUserSettings = null;
+            const solutionSettingsFileName = this.getSettingsFileName(true);
+            if (solutionSettingsFileName && fs.existsSync(solutionSettingsFileName)) {
+                Log.verbose('Load Solution User Settings');
+                solutionUserSettings = require(solutionSettingsFileName) as ISettings;
+            }
+
+            const projectSettingsFileName = this.getSettingsFileName();
+            if (projectSettingsFileName && fs.existsSync(projectSettingsFileName)) {
+                Log.verbose('Load Project User Settings ...');
+                const projectUserSettings = require(projectSettingsFileName) as ISettings;
+
+                let useAppvMgr = false;
+                if (this.options.UseAppVersionMgr) {
+                    useAppvMgr = this.options.UseAppVersionMgr;
+                }
+                currentSettings = MergeHelpers.mergeSettings(currentSettings, projectUserSettings, solutionUserSettings, useAppvMgr);
+            }
+
+            if (currentSettings) {
+
+                if (this.options.UseAppVersionMgr && currentSettings.Version && !this.IsSolution) {
+
+                    const dir = path.dirname(this.ProjectFilePath);
+                    const patterns = currentSettings.Pattern;
+
+                    currentSettings.Version.AssemblyVersion = await Info.composePattern(patterns.AssemblyVersion, dir);
+                    currentSettings.Version.FileVersion = await Info.composePattern(patterns.FileVersion, dir);
+                    currentSettings.Version.InformationalVersion = await Info.composePattern(patterns.InformationalVersion, dir);
+                    currentSettings.Version.PackageVersion = await Info.composePattern(patterns.PackageVersion, dir);
+                    currentSettings.Version.Version = await Info.composePattern(patterns.Version, dir);
+                    currentSettings.Version.VersionPrefix = await Info.composePattern(patterns.VersionPrefix, dir);
+                    currentSettings.Version.VersionSuffix = await Info.composePattern(patterns.VersionSuffix, dir);
+                }
+
+                if (createSettingsFile) {
+                    const writer = new SettingsWriter(this.SolutionFilePath, this.ProjectFilePath, this.options);
+                    currentSettings = await writer.writeSettings(currentSettings, overwriteSettingsFile);
+
+                    const dir = path.dirname(this.ProjectFilePath);
+                    const appVersionFile = path.join(dir, 'appversion.json');
+
+                    if (this.options.UseAppVersionMgr && !this.IsSolution && (overwriteSettingsFile || !fs.existsSync(appVersionFile))) {
+
+                        if (fs.existsSync(appVersionFile)) {
+                            fs.unlinkSync(appVersionFile);
+                        }
+
+                        let badgeUrl = null;
+                        let projectUrl = null;
+                        let projectName = null;
+                        if (currentSettings.Package) {
+                            badgeUrl = currentSettings.Package.BadgeBaseUrl;
+                            projectUrl = currentSettings.Package.PackageProjectUrl;
+                        }
+                        if (currentSettings.Project) {
+                            projectName = currentSettings.Project.AssemblyName;
+                        }
+
+                        const create = new CreateCommand(dir, badgeUrl || undefined, projectUrl || undefined, projectName || undefined);
+                        create.initAppVersion();
+                    }
                 }
             }
-        });
+
+            return currentSettings;
+        } catch (e) {
+            throw e;
+        }
     }
 }

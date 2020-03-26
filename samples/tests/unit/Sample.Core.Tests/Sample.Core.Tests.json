@@ -1,0 +1,17 @@
+{
+    "ProjectFile": "samples/tests/unit/Sample.Core.Tests/Sample.Core.Tests.csproj",
+    "Project": {
+        "Description": null,
+        "PackageTags": null,
+        "RootNamespace": "My.Special.NameSpace",
+        "AssemblyName": "Sample.Core.Tests",
+        "IsTestProject": true,
+        "LangVersion": "8.0"
+    },
+    "Build": {
+        "OutputPath": "../../../dist"
+    },
+    "Package": {
+        "GeneratePackageOnBuild": false
+    }
+}

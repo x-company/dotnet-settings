@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-21 16:36:34
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-06 21:10:48
+ * @Last Modified At: 2020-03-08 20:09:57
  * @Description: This is description.
  */
 
@@ -17,8 +17,9 @@ export interface IBuildSettings {
     TargetFramework: string | null;
     RuntimeIdentifiers: string | null;
     Configuration: string | null;
-    SignAssembly: boolean;
-    DelaySign: boolean;
     AssemblyOriginatorKeyFile: string | null;
     OutputPath: string | null;
+    SignAssembly: boolean | null;
+    DelaySign: boolean | null;
+    GenerateDocumentationFile: boolean | null;
 }

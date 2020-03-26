@@ -1,0 +1,29 @@
+{
+  "version": {
+    "major": 0,
+    "minor": 1,
+    "patch": 0,
+    "badge": "[![Sample.Core.Cli-version](https://img.shields.io/badge/Version-${M.m.p}-brightgreen.svg?style=flat)](#define-a-url)"
+  },
+  "build": {
+    "date": null,
+    "number": 0,
+    "total": 0,
+    "badge": "[![Sample.Core.Cli-build](https://img.shields.io/badge/Builds-${t}-brightgreen.svg?style=flat)](#define-a-url)"
+  },
+  "status": {
+    "stage": null,
+    "number": 0,
+    "badge": "[![Sample.Core.Cli-status](https://img.shields.io/badge/Status-${S%20s}-brightgreen.svg?style=flat)](#define-a-url)"
+  },
+  "git": {
+    "commit": null,
+    "tag": "vM.m.p"
+  },
+  "config": {
+    "schema": "1.11.1",
+    "ignore": [],
+    "json": [],
+    "markdown": []
+  }
+}

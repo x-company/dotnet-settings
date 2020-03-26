@@ -14,8 +14,9 @@
  */
 
 import { Log } from '../helpers/Log';
-
-
+import findRoot from 'find-root';
+import path from 'path';
+import fs from 'fs-extra';
 
 export class Info {
     /**
@@ -28,6 +29,16 @@ export class Info {
     public static getProductVersion(): string {
 
         Log.verbose('Get Product Version');
+
+        const root = findRoot(__dirname, (dir) => {
+            return fs.existsSync(path.resolve(dir, 'package.json'));
+        });
+
+        const packageJson = path.join(root, 'package.json');
+        if (fs.existsSync(packageJson)) {
+            const packageJsonObj = require(packageJson);
+            return packageJsonObj.version;
+        }
 
         return Info.PROG_VERSION;
     }

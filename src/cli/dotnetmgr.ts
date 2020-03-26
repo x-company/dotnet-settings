@@ -11,7 +11,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2019-01-07 19:26:24
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-07 20:55:39
+ * @Last Modified At: 2019-11-14 21:20:10
  * @Description: This is description.
  */
 
@@ -35,6 +35,7 @@ program
     .option('-s, --solution <file>', 'Specifies the Solution File.')
     .option('-f, --force', 'Overwrites existing DotNet Settings Files. All existing Settings will lost.')
     .option('-v, --verbose', 'Shows verbose Messages')
+    .option('--no-auto-update', 'Don\'t use AppVersion Manager to update the Versions.')
     .action(async (options) => {
 
         let level = 'warn';
@@ -45,9 +46,14 @@ program
         const solution = options.solution || undefined;
 
         try {
+            let autoupdate = true;
+            if (!options.autoUpdate) {
+                autoupdate = false;
+            }
+
             const settings = new DotNetSettings(solution, {
-                UseAppVersionMgr: true,
-                LogLevel : level,
+                UseAppVersionMgr: autoupdate,
+                LogLevel: level,
             });
             if (options.force) {
                 await settings.initSettings(true);
@@ -64,6 +70,7 @@ program
     .description('Updates the DotNet Project Files with the defined Settings.')
     .option('-s, --solution <file>', 'Specifies the Solution File.')
     .option('-v, --verbose', 'Shows verbose Messages')
+    .option('--no-auto-update', 'Don\'t use AppVersion Manager to update the Versions.')
     .action(async (options) => {
 
         let level = 'warn';
@@ -73,9 +80,14 @@ program
         const solution = options.solution || undefined;
 
         try {
+            let autoupdate = true;
+            if (!options.autoUpdate) {
+                autoupdate = false;
+            }
+
             const settings = new DotNetSettings(solution, {
-                UseAppVersionMgr: true,
-                LogLevel : level,
+                UseAppVersionMgr: autoupdate,
+                LogLevel: level,
             });
             await settings.updateProjects();
         } catch (e) {

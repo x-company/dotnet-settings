@@ -33,7 +33,7 @@ export class Updater {
         const checkInternet = (callback: (result: boolean) => void) => {
             dns.lookup('www.google.com', (error, hostname, service) => {
                 if (error && error.code === 'ENOTFOUND') {
-                    Log.error('No Internet Connection available. Update Checks not possible.');
+                    Log.warning('No Internet Connection available. Update Checks not possible.');
                     callback(false);
                 } else {
                     Log.verbose('We have an Internet Connection. Perform an Update Check.');

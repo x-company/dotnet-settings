@@ -10,7 +10,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-21 16:58:01
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-05 13:44:59
+ * @Last Modified At: 2020-03-08 20:04:48
  * @Description: This is description.
  */
 
@@ -22,5 +22,7 @@ export interface IPackageSettings {
     PackageProjectUrl: string | null;
     RepositoryUrl: string | null;
     RepositoryType: string | null;
-    GeneratePackageOnBuild: boolean;
+    GeneratePackageOnBuild: boolean | null;
+
+    BadgeBaseUrl: string | null;
 }

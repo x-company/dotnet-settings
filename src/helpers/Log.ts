@@ -9,7 +9,7 @@
  * @Email: roland.breitschaft@x-company.de
  * @Create At: 2018-12-22 09:23:35
  * @Last Modified By: Roland Breitschaft
- * @Last Modified At: 2019-01-05 17:44:11
+ * @Last Modified At: 2019-07-31 14:48:59
  * @Description: This is description.
  */
 
@@ -42,12 +42,10 @@ export class Log {
     }
 
     public static success(message: string, ...args: any[]) {
-        if (this.isLoggingAllowed('success')) {
-            if (args && args.length !== 0) {
-                console.log(logSymbols.success, message, args);
-            } else {
-                console.log(logSymbols.success, message);
-            }
+        if (args && args.length !== 0) {
+            console.log(logSymbols.success, message, args);
+        } else {
+            console.log(logSymbols.success, message);
         }
     }
 

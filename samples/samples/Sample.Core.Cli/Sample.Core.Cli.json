@@ -1,0 +1,17 @@
+{
+    "ProjectFile": "samples/samples/Sample.Core/Sample.Core.Cli.csproj",
+    "Project": {
+        "Description": null,
+        "PackageTags": null,
+        "RootNamespace": "My.Special.NameSpace",
+        "AssemblyName": "Sample.Core.Cli",
+        "IsTestProject": false,
+        "LangVersion": "8.0"
+    },
+    "Build": {
+        "SignAssembly": true
+    },
+    "Package": {
+        "GeneratePackageOnBuild": false
+    }
+}

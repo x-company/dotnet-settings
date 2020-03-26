@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+                <Configuration>Release</Configuration>
+                <TargetFramework>netcoreapp2.2</TargetFramework>
+                <Authors>Roland Breitschaft</Authors>
+                <RepositoryUrl>https://my.project.lives.here.com/project/name.git</RepositoryUrl>
+                <AssemblyName>Sample.Core.Cli</AssemblyName>
+                <RootNamespace>My.Special.NameSpace</RootNamespace>
+                <AssemblyVersion>0.1.0.0</AssemblyVersion>
+                <FileVersion>0.1.0.0</FileVersion>
+                <InformationalVersion>0.1.0-null.0-0</InformationalVersion>
+                <PackageVersion>0.1.0-null.0-0</PackageVersion>
+                <Version>0.1.0</Version>
+                <VersionPrefix>0.1.0</VersionPrefix>
+                <VersionSuffix>null.0-0</VersionSuffix>
+                <OutputPath>../../dist</OutputPath>
+                <LangVersion>8.0</LangVersion>
+                <AssemblyOriginatorKeyFile>./MyKey.snk</AssemblyOriginatorKeyFile>
+                <SignAssembly>true</SignAssembly>
+        </PropertyGroup>
+        <PropertyGroup>
+                <tttt/>
+        </PropertyGroup>
+        <ItemGroup>
+                <PackageReference Include="Automapper" Version="8.1.1"/>
+                <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="6.1.1"/>
+                <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6"/>
+                <PackageReference Include="RiskFirst.Hateoas" Version="3.1.1"/>
+                <PackageReference Include="RiskFirst.Hateoas.Models" Version="3.1.1"/>
+        </ItemGroup>
+</Project>

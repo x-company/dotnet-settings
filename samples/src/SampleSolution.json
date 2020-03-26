@@ -1,0 +1,40 @@
+{
+    "Build": {
+        "AssemblyOriginatorKeyFile": "./MyKey.snk",
+        "Configuration": "Release",
+        "DelaySign": false,
+        "OutputPath": "../../dist",
+        "RuntimeIdentifiers": null,
+        "SignAssembly": true,
+        "TargetFramework": "netcoreapp2.2",
+        "GenerateDocumentationFile": false
+    },
+    "Package": {
+        "Authors": null,
+        "Company": null,
+        "Copyright": null,
+        "GeneratePackageOnBuild": true,
+        "PackageProjectUrl": null,
+        "RepositoryType": null,
+        "RepositoryUrl": null,
+        "BadgeBaseUrl": null
+    },
+    "Version": {
+        "AssemblyVersion": "0.1.0.0",
+        "FileVersion": "0.1.0.0",
+        "InformationalVersion": "0.1.0",
+        "PackageVersion": "0.1.0",
+        "Version": "0.1.0",
+        "VersionPrefix": "0.1.0",
+        "VersionSuffix": null
+    },
+    "Pattern": {
+        "AssemblyVersion": "M.m.p.t",
+        "FileVersion": "M.m.p.t",
+        "InformationalVersion": "M.m.p-S.s-t",
+        "PackageVersion": "M.m.p-S.s-t",
+        "Version": "M.m.p",
+        "VersionPrefix": "M.m.p",
+        "VersionSuffix": "S.s-t"
+    }
+}
